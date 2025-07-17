@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner de QR Code e EAN</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Orbitron', Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            background: #fff;
+            padding: 24px 0 0 0;
+            min-height: 80px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .voltar {
+            color: #b3c43e;
+            font-weight: bold;
+            font-size: 15px;
+            margin-left: 16px;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 16px;
+        }
+        .instructions {
+            margin: 32px 0 16px 0;
+            text-align: center;
+            font-size: 16px;
+        }
+        .scanner-area {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin: 0 auto 24px auto;
+            background: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .scanner-corner {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 4px solid #fff;
+        }
+        .scanner-corner.tl { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+        .scanner-corner.tr { top: -4px; right: -4px; border-left: none; border-bottom: none; }
+        .scanner-corner.bl { bottom: -4px; left: -4px; border-right: none; border-top: none; }
+        .scanner-corner.br { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .button {
+            width: 90vw;
+            max-width: 320px;
+            margin: 24px auto 12px auto;
+            padding: 18px 0;
+            background: #f7b942;
+            color: #222;
+            font-size: 20px;
+            font-family: 'Orbitron', Arial, sans-serif;
+            border: none;
+            border-radius: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: block;
+        }
+        .button-ean {
+            width: 90vw;
+            max-width: 320px;
+            margin: 0 auto 24px auto;
+            padding: 14px 0;
+            background: linear-gradient(90deg, #b3ff57 0%, #3f6 100%);
+            color: #101c12;
+            font-size: 18px;
+            font-family: 'Orbitron', Arial, sans-serif;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 2px 12px #3f6a;
+            transition: background 0.2s;
+        }
+        .button-ean:hover {
+            background: linear-gradient(90deg, #3f6 0%, #b3ff57 100%);
+        }
+        .banner {
+            background: #fff;
+            color: #000;
+            width: 90vw;
+            max-width: 340px;
+            height: 100px;
+            margin: 32px auto 0 auto;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+        }
+        /* Modal */
+        .input-ean-modal-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(16,28,18,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .input-ean-modal {
+            background: #162b1b;
+            border-radius: 18px;
+            padding: 32px 24px 24px 24px;
+            box-shadow: 0 4px 32px #3f6a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 270px;
+            max-width: 90vw;
+        }
+        .input-ean-modal label {
+            color: #b3ff57;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .input-ean {
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-size: 18px;
+            margin-bottom: 18px;
+            width: 220px;
+            background: #eaffea;
+            color: #222;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        .modal-btns {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            justify-content: center;
+        }
+        .modal-btn {
+            padding: 12px 22px;
+            background: linear-gradient(90deg, #b3ff57 0%, #3f6 100%);
+            color: #101c12;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Orbitron', Arial, sans-serif;
+            box-shadow: 0 2px 8px #3f6a;
+            transition: background 0.2s;
+        }
+        .modal-btn:hover {
+            background: linear-gradient(90deg, #3f6 0%, #b3ff57 100%);
+        }
+        #resultado {
+            margin: 32px auto 0 auto;
+            background: #162b1b;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px #3f6a;
+            padding: 24px 18px;
+            max-width: 340px;
+            min-height: 80px;
+            color: #d4ffd4;
+            font-size: 1.1em;
+            text-align: center;
+            word-break: break-word;
+            display: none;
+        }
+        #resultado img {
+            max-width: 180px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #3f6a;
+        }
+        @media (max-width: 400px) {
+            .input-ean-modal { min-width: 90vw; }
+            #resultado { max-width: 95vw; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Instale a biblioteca jsQR via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+    <div class="header">
+        <a href="#" class="voltar">&lt; VOLTAR</a>
+    </div>
+    <div class="container" id="main-container">
+        <div class="instructions">
+            Posicione a câmera sobre o QR Code<br>
+            e clique no botão abaixo.
+        </div>
+        <div class="scanner-area">
+            <div class="scanner-corner tl"></div>
+            <div class="scanner-corner tr"></div>
+            <div class="scanner-corner bl"></div>
+            <div class="scanner-corner br"></div>
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+        </div>
+        <button class="button" id="enviar-nf">ENVIAR NF</button>
+        <button class="button-ean" id="abrir-ean">DIGITAR EAN</button>
+        <div class="banner">
+            Banner Empresas
+        </div>
+    </div>
+    <div id="resultado"></div>
+    <!-- Modal para digitar EAN -->
+    <div class="input-ean-modal-bg" id="modal-bg">
+        <div class="input-ean-modal">
+            <label for="ean-modal-input">Digite o EAN:</label>
+            <input type="text" class="input-ean" id="ean-modal-input" maxlength="20" autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+            <div class="modal-btns">
+                <button class="modal-btn" id="buscar-ean">Buscar</button>
+                <button class="modal-btn" id="fechar-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Ativa a câmera para o vídeo
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const resultado = document.getElementById('resultado');
+        let scanning = true;
+
+        function startCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
+                    .then(function(stream) {
+                        video.srcObject = stream;
+                        video.setAttribute("playsinline", true);
+                        video.play();
+                        scanning = true;
+                        requestAnimationFrame(tick);
+                    })
+                    .catch(function(err) {
+                        resultado.style.display = 'block';
+                        resultado.innerHTML = "<span style='color:#ffb347'>Não foi possível acessar a câmera.</span>";
+                    });
+            } else {
+                resultado.style.display = 'block';
+                resultado.innerHTML = "<span style='color:#ffb347'>Seu dispositivo não suporta acesso à câmera.</span>";
+            }
+        }
+
+        function tick() {
+            if (!scanning) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                if (code) {
+                    scanning = false;
+                    // Se for um link, abre na web
+                    if (code.data.startsWith("http://") || code.data.startsWith("https://")) {
+                        window.open(code.data, "_blank");
+                        resultado.style.display = 'block';
+                        resultado.innerHTML = `<span style='color:#b3ff57'>QR Code reconhecido! Abrindo link...</span>`;
+                    } else {
+                        resultado.style.display = 'block';
+                        resultado.innerHTML = `<span style='color:#b3ff57'>QR Code reconhecido:<br>${code.data}</span>`;
+                    }
+                    // Para reiniciar o scanner após 3 segundos
+                    setTimeout(() => {
+                        resultado.style.display = 'none';
+                        scanning = true;
+                        requestAnimationFrame(tick);
+                    }, 3000);
+                    return;
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        startCamera();
+
+        // Modal EAN
+        document.getElementById('abrir-ean').onclick = function() {
+            document.getElementById('modal-bg').style.display = 'flex';
+            document.getElementById('ean-modal-input').value = '';
+            document.getElementById('ean-modal-input').focus();
+        };
+        document.getElementById('fechar-modal').onclick = function() {
+            document.getElementById('modal-bg').style.display = 'none';
+        };
+        document.getElementById('buscar-ean').onclick = buscarProduto;
+        document.getElementById('ean-modal-input').addEventListener('keydown', function(e){
+            if(e.key === 'Enter') buscarProduto();
+        });
+
+        function buscarProduto() {
+            const ean = document.getElementById('ean-modal-input').value.trim();
+            if (!ean) {
+                resultado.style.display = 'block';
+                resultado.innerHTML = "<span style='color:#ffb347'>Digite um EAN válido.</span>";
+                return;
+            }
+            resultado.style.display = 'block';
+            resultado.innerHTML = "<span style='color:#b3ff57'>Buscando...</span>";
+            fetch(`https://world.openfoodfacts.org/api/v0/product/${ean}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 1) {
+                        resultado.innerHTML = "<span style='color:#ffb347'>Produto não encontrado.</span>";
+                        return;
+                    }
+                    const produto = data.product;
+                    const imagem = produto.image_url || '';
+                    const nome = produto.product_name_pt || produto.product_name || 'Nome não informado';
+                    const embalagem = produto.packaging_pt || produto.packaging || 'Embalagem não informada';
+                    const quantidade = produto.quantity || 'Quantidade não informada';
+                    resultado.innerHTML = `
+                        ${imagem ? `<img src="${imagem}" alt="Imagem do produto"><br>` : ''}
+                        <strong>Nome:</strong> ${nome}<br>
+                        <strong>EAN:</strong> ${ean}<br>
+                        <strong>Embalagem:</strong> ${embalagem}<br>
+                        <strong>Quantidade:</strong> ${quantidade}
+                    `;
+                })
+                .catch(() => {
+                    resultado.innerHTML = "<span style='color:#ffb347'>Erro ao buscar produto.</span>";
+                });
+            document.getElementById('modal-bg').style.display = 'none';
+            setTimeout(() => {
+                resultado.scrollIntoView({behavior: "smooth"});
+            }, 200);
+        }
+    </script>
+</body>
+</html>
