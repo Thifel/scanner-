@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ciclik - Login e Painel</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        html, body {
+            overflow-x: hidden;
+            width: 100vw;
+            max-width: 100vw;
+        }
         body {
             margin: 0;
             font-family: 'Orbitron', Arial, sans-serif;
@@ -94,6 +100,7 @@
             justify-content: flex-start;
             min-height: calc(100vh - 120px);
             width: 100vw;
+            max-width: 100vw;
             box-sizing: border-box;
             padding-bottom: 80px;
             background: none;
@@ -181,6 +188,7 @@
             justify-content: space-around;
             z-index: 100;
             box-shadow: 0 -2px 8px #0001;
+            max-width: 100vw;
         }
         .bottom-bar i {
             color: #b3c43e;
@@ -304,6 +312,12 @@
     </div>
     <div id="main-bg" class="container">
         <!-- Conteúdo dinâmico aqui -->
+    </div>
+    <div class="bottom-bar">
+        <i class="fa-solid fa-leaf"></i>
+        <i class="fa-regular fa-calendar-days"></i>
+        <i class="fa-solid fa-recycle"></i>
+        <i class="fa-solid fa-ticket" id="icon-cupons"></i>
     </div>
 
     <!-- Scanner HTML (oculto por enquanto, mas mantido no arquivo) -->
@@ -437,11 +451,11 @@
             mainBg.className = "container";
             mainBg.innerHTML = `
                 <div style="width:100%;">
-                    <button class="painel-btn"><span>Consumo sustentável</span><i class="fa-solid fa-leaf"></i></button>
-                    <button class="painel-btn"><span>Agendamento de Coletas</span><i class="fa-regular fa-calendar-days"></i></button>
-                    <button class="painel-btn"><span>Minha reciclagem</span><i class="fa-solid fa-recycle"></i></button>
-                    <button class="painel-btn"><span>Meus Cupons</span><i class="fa-solid fa-ticket"></i></button>
-                    <button class="painel-btn"><span>Meu Perfil</span><i class="fa-regular fa-user"></i></button>
+                    <button class="painel-btn" id="btn-consumo"><span>Consumo sustentável</span><i class="fa-solid fa-leaf"></i></button>
+                    <button class="painel-btn" id="btn-agendamento"><span>Agendamento de Coletas</span><i class="fa-regular fa-calendar-days"></i></button>
+                    <button class="painel-btn" id="btn-reciclagem"><span>Minha reciclagem</span><i class="fa-solid fa-recycle"></i></button>
+                    <button class="painel-btn" id="btn-cupons"><span>Meus Cupons</span><i class="fa-solid fa-ticket"></i></button>
+                    <button class="painel-btn" id="btn-perfil"><span>Meu Perfil</span><i class="fa-regular fa-user"></i></button>
                     <div class="painel-card">Banner Empresas</div>
                     <a class="painel-link" href="https://g1.globo.com/pa/para/noticia/2025/07/17/cop-30-governo-federal-contrata-dois-cruzeiros-e-lanca-plataforma-de-hospedagem.ghtml" target="_blank">
                         <img src="https://s2-g1.glbimg.com/9wQwQb8wQwQwQwQwQwQwQwQw=/0x0:1200x675/1200x675/filters:strip_icc()/s.glbimg.com/es/ge/f/original/2023/09/18/cop30.jpg" 
@@ -460,9 +474,45 @@
                     <i class="fa-solid fa-leaf"></i>
                     <i class="fa-regular fa-calendar-days"></i>
                     <i class="fa-solid fa-recycle"></i>
-                    <i class="fa-solid fa-ticket"></i>
+                    <i class="fa-solid fa-ticket" id="icon-cupons"></i>
                 </div>
             `;
+            document.getElementById('btn-consumo').onclick = telaConsumoSustentavel;
+            document.getElementById('btn-cupons').onclick = telaCupons;
+            document.getElementById('icon-cupons').onclick = telaCupons;
+            // Listener para o ícone de consumo sustentável na barra inferior
+            document.querySelector('.fa-leaf').onclick = telaConsumoSustentavel;
+        }
+
+        function telaCupons() {
+            const mainBg = document.getElementById('main-bg');
+            mainBg.className = "container";
+            // Nomes fictícios de empresas
+            const empresas = [
+                "Eco Recicla",
+                "Verde Limpo",
+                "Planeta Sustentável",
+                "Recicla Pará",
+                "Ciclo Verde"
+            ];
+            mainBg.innerHTML = `
+                <div style="margin:18px 0 0 0;">
+                    <button class="voltar" id="voltar-cupom" style="display:block;margin-bottom:18px;">&lt; VOLTAR</button>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:18px;">
+                    ${[1,2,3,4,5].map(i => `
+                        <div style="background:#fff;border-radius:14px;box-shadow:0 2px 8px #b3c43e22;padding:24px 18px;display:flex;align-items:center;gap:18px;border:1px solid #ccc;">
+                            <i class="fa-solid fa-ticket" style="color:#8dc63f;font-size:2.2em;"></i>
+                            <div style="font-family:'Inter', Arial, sans-serif;">
+                                <div style="font-weight:bold;color:#888;">nº CUPOM <span style="font-family:'Inter',Arial,sans-serif;">${String(i).padStart(4,'0')}</span></div>
+                                <div style="color:#888;">${empresas[i-1]}</div>
+                                <div style="color:#888;">${String(10+i).padStart(2,'0')}/07/2025</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('voltar-cupom').onclick = () => telaPainelAnalista();
         }
 
         function telaCadastro() {
@@ -572,6 +622,336 @@
                 `;
             }
             document.getElementById('cadastro-campos').innerHTML = html;
+        }
+
+        function telaConsumoSustentavel() {
+            const mainBg = document.getElementById('main-bg');
+            mainBg.className = "container";
+            const empresas = [
+                {
+                    nome: "VerdeMax",
+                    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Logo_placeholder.svg/120px-Logo_placeholder.svg.png",
+                    segmento: "Supermercado",
+                    descricao: "Produtos orgânicos e naturais"
+                },
+                {
+                    nome: "Farmavida",
+                    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Logo_placeholder.svg/120px-Logo_placeholder.svg.png",
+                    segmento: "Farmácia",
+                    descricao: "Medicamentos e bem-estar"
+                },
+                {
+                    nome: "ShopFácil",
+                    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Logo_placeholder.svg/120px-Logo_placeholder.svg.png",
+                    segmento: "Shopping",
+                    descricao: "Lojas e lazer sustentável"
+                },
+                {
+                    nome: "VarejoEco",
+                    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Logo_placeholder.svg/120px-Logo_placeholder.svg.png",
+                    segmento: "Varejo",
+                    descricao: "Produtos ecológicos"
+                },
+                {
+                    nome: "Mercadinho Bom",
+                    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Logo_placeholder.svg/120px-Logo_placeholder.svg.png",
+                    segmento: "Supermercado",
+                    descricao: "Descontos em produtos verdes"
+                }
+            ];
+            const segmentos = ["Todos", ...new Set(empresas.map(e => e.segmento))];
+
+            function renderEmpresas(filtro) {
+                const lista = (!filtro || filtro === "Todos") ? empresas : empresas.filter(emp => emp.segmento === filtro);
+                return lista.map((emp, idx) => `
+                    <div class="empresa-card" data-idx="${idx}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px #b3c43e22;padding:16px 12px;display:flex;align-items:center;gap:18px;border:1px solid #ccc;max-width:320px;width:100%;cursor:pointer;">
+                        <img src="${emp.logo}" alt="Logo ${emp.nome}" style="width:70px;height:50px;object-fit:contain;border-radius:8px;background:#fff;">
+                        <div style="font-family:'Inter', Arial, sans-serif;">
+                            <div style="font-weight:bold;color:#888;font-size:1.08em;">${emp.nome}</div>
+                            <div style="color:#888;font-size:0.93em;">${emp.segmento}</div>
+                            <div style="color:#888;font-size:0.93em;">${emp.descricao}</div>
+                        </div>
+                    </div>
+                `).join('') || `<div style="color:#888;text-align:center;margin-top:24px;">Nenhuma empresa encontrada.</div>`;
+            }
+
+            mainBg.innerHTML = `
+                <div style="margin:18px 0 0 0;">
+                    <button class="voltar" id="voltar-consumo" style="display:block;margin-bottom:18px;">&lt; VOLTAR</button>
+                </div>
+                <div style="margin-bottom:18px;">
+                    <div style="background:#fff;border-radius:12px;padding:0 18px;display:flex;align-items:center;box-shadow:0 1px 4px #0001;border:1px solid #ddd;max-width:320px;width:100%;height:48px;position:relative;">
+                        <select id="filtro-segmento"
+                            style="border:none;outline:none;font-size:1.1em;color:#888;background:transparent;width:100%;font-family:'Inter',Arial,sans-serif;appearance:none;-webkit-appearance:none;-moz-appearance:none;z-index:2;position:relative;cursor:pointer;padding-right:32px;">
+                            ${segmentos.map(seg => `<option value="${seg}">${seg}</option>`).join('')}
+                        </select>
+                        <span style="position:absolute;right:18px;pointer-events:none;">
+                            <i class="fa-solid fa-chevron-down" style="color:#8dc63f;font-size:1.2em;"></i>
+                        </span>
+                    </div>
+                </div>
+                <div id="empresas-list" style="display:flex;flex-direction:column;gap:18px;">
+                    ${renderEmpresas("Todos")}
+                </div>
+            `;
+            document.getElementById('voltar-consumo').onclick = () => telaPainelAnalista();
+
+            // Filtro funcional
+            document.getElementById('filtro-segmento').onchange = function() {
+                document.getElementById('empresas-list').innerHTML = renderEmpresas(this.value);
+                addEmpresaCardListeners();
+            };
+
+            // Clique nas empresas
+            function addEmpresaCardListeners() {
+                document.querySelectorAll('.empresa-card').forEach(card => {
+                    card.onclick = function() {
+                        const idx = parseInt(card.getAttribute('data-idx'));
+                        telaDetalheEmpresa(empresas[idx]);
+                    };
+                });
+            }
+            addEmpresaCardListeners();
+        }
+
+        function telaCheckinEmpresa(empresa) {
+            const mainBg = document.getElementById('main-bg');
+            mainBg.className = "container";
+            // Troca o fundo para preto só nessa tela
+            document.body.style.background = "#000";
+            mainBg.style.background = "#000";
+            mainBg.innerHTML = `
+        <div style="height:24px;"></div>
+        <div class="container" id="main-container" style="display:flex;flex-direction:column;align-items:center;padding:0 16px;">
+            <div class="instructions" style="margin:32px 0 16px 0;text-align:center;font-size:16px;color:#fff;">
+                Posicione a câmera sobre o QR Code<br>
+                e clique no botão abaixo.
+            </div>
+            <div class="scanner-area" style="position:relative;width:260px;height:260px;margin:0 auto 24px auto;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                <div class="scanner-corner tl" style="position:absolute;width:32px;height:32px;border:4px solid #fff;top:-4px;left:-4px;border-right:none;border-bottom:none;"></div>
+                <div class="scanner-corner tr" style="position:absolute;width:32px;height:32px;border:4px solid #fff;top:-4px;right:-4px;border-left:none;border-bottom:none;"></div>
+                <div class="scanner-corner bl" style="position:absolute;width:32px;height:32px;border:4px solid #fff;bottom:-4px;left:-4px;border-right:none;border-top:none;"></div>
+                <div class="scanner-corner br" style="position:absolute;width:32px;height:32px;border:4px solid #fff;bottom:-4px;right:-4px;border-left:none;border-top:none;"></div>
+                <video id="video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+            </div>
+            <div id="qr-result" style="display:none;margin-bottom:18px;">
+                <button id="abrir-link-qr" style="background:#b3c43e;color:#fff;font-size:1em;padding:12px 18px;border:none;border-radius:10px;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;cursor:pointer;">
+                    Abrir link do QR Code
+                </button>
+                <div id="qr-text" style="color:#fff;margin-top:8px;word-break:break-all;"></div>
+            </div>
+            <button class="button" id="enviar-nf" style="width:90vw;max-width:320px;margin:24px auto 12px auto;padding:18px 0;background:#f7b942;color:#222;font-size:20px;font-family:'Orbitron', Arial, sans-serif;border:none;border-radius:16px;font-weight:bold;letter-spacing:1px;cursor:pointer;display:block;">
+                ENVIAR NF
+            </button>
+            <button class="button-ean" id="abrir-ean" style="width:90vw;max-width:320px;margin:0 auto 24px auto;padding:14px 0;background:linear-gradient(90deg,#b3ff57 0%,#3f6 100%);color:#101c12;font-size:18px;font-family:'Orbitron', Arial, sans-serif;border:none;border-radius:12px;font-weight:bold;letter-spacing:1px;cursor:pointer;box-shadow:0 2px 12px #3f6a;transition:background 0.2s;">
+                DIGITAR EAN
+            </button>
+            <div class="banner" style="background:#fff;color:#000;width:90vw;max-width:340px;height:100px;margin:32px auto 0 auto;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;">
+                Banner Empresas
+            </div>
+        </div>
+        <div id="resultado" style="margin:32px auto 0 auto;background:#162b1b;border-radius:16px;box-shadow:0 2px 16px #3f6a;padding:24px 18px;max-width:340px;min-height:80px;color:#d4ffd4;font-size:1.1em;text-align:center;word-break:break-word;display:none;"></div>
+        <!-- Modal para digitar EAN -->
+        <div class="input-ean-modal-bg" id="modal-bg" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(16,28,18,0.95);display:none;align-items:center;justify-content:center;z-index:1000;">
+            <div class="input-ean-modal" style="background:#162b1b;border-radius:18px;padding:32px 24px 24px 24px;box-shadow:0 4px 32px #3f6a;display:flex;flex-direction:column;align-items:center;min-width:270px;max-width:90vw;">
+                <label for="ean-modal-input" style="color:#b3ff57;font-size:1.1em;margin-bottom:12px;letter-spacing:1px;">Digite o EAN:</label>
+                <input type="text" class="input-ean" id="ean-modal-input" maxlength="20" autocomplete="off" inputmode="numeric" pattern="[0-9]*"
+                    style="padding:14px;border-radius:10px;border:none;font-size:18px;margin-bottom:18px;width:220px;background:#eaffea;color:#222;text-align:center;letter-spacing:2px;">
+                <div class="modal-btns" style="display:flex;gap:12px;width:100%;justify-content:center;">
+                    <button class="modal-btn" id="buscar-ean" style="padding:12px 22px;background:linear-gradient(90deg,#b3ff57 0%,#3f6 100%);color:#101c12;font-size:16px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-family:'Orbitron', Arial, sans-serif;box-shadow:0 2px 8px #3f6a;transition:background 0.2s;">Buscar</button>
+                    <button class="modal-btn" id="fechar-modal" style="padding:12px 22px;background:linear-gradient(90deg,#b3ff57 0%,#3f6 100%);color:#101c12;font-size:16px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-family:'Orbitron', Arial, sans-serif;box-shadow:0 2px 8px #3f6a;transition:background 0.2s;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        <div style="width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:40px 0 16px 0;">
+            <div class="logo-ciclik" style="display:flex;flex-direction:column;align-items:center;">
+                <div class="logo" style="font-family:'Orbitron',Arial,sans-serif;font-size:2.2em;color:#fff;font-weight:bold;letter-spacing:1px;line-height:1;">
+                    ciclik <span style="color:#ffd050;font-weight:normal;">↻</span>
+                </div>
+                <div class="logo-sub" style="font-size:0.9em;color:#b3c43e;margin-top:2px;margin-left:2px;font-family:'Orbitron',Arial,sans-serif;">
+                    recicle e ganhe
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Função para ativar a câmera e scanner
+    const script = document.createElement('script');
+    script.innerHTML = `
+        let scanning = true;
+        let lastQR = "";
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const resultado = document.getElementById('resultado');
+        const qrResult = document.getElementById('qr-result');
+        const qrText = document.getElementById('qr-text');
+        const abrirLinkBtn = document.getElementById('abrir-link-qr');
+        qrResult.style.display = 'none';
+
+        function startCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
+                    .then(function(stream) {
+                        video.srcObject = stream;
+                        video.setAttribute("playsinline", true);
+                        video.play();
+                        scanning = true;
+                        requestAnimationFrame(tick);
+                    })
+                    .catch(function(err) {
+                        resultado.style.display = 'block';
+                        resultado.innerHTML = "<span style='color:#ffb347'>Não foi possível acessar a câmera.</span>";
+                    });
+            } else {
+                resultado.style.display = 'block';
+                resultado.innerHTML = "<span style='color:#ffb347'>Seu dispositivo não suporta acesso à câmera.</span>";
+            }
+        }
+        function tick() {
+            if (!scanning) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                if(window.jsQR){
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                    if (code && code.data !== lastQR) {
+                        scanning = false;
+                        lastQR = code.data;
+                        qrResult.style.display = 'block';
+                        qrText.textContent = code.data;
+                        abrirLinkBtn.onclick = function() {
+                            let url = code.data;
+                            if (!/^https?:\\/\\//i.test(url)) url = "https://" + url;
+                            window.open(url, "_blank");
+                        };
+                        // Reinicia o scanner após 10s
+                        setTimeout(() => {
+                            qrResult.style.display = 'none';
+                            lastQR = "";
+                            scanning = true;
+                            requestAnimationFrame(tick);
+                        }, 10000);
+                        return;
+                    }
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+        startCamera();
+
+        // Modal EAN
+        document.getElementById('abrir-ean').onclick = function() {
+            document.getElementById('modal-bg').style.display = 'flex';
+            document.getElementById('ean-modal-input').value = '';
+            document.getElementById('ean-modal-input').focus();
+        };
+        document.getElementById('fechar-modal').onclick = function() {
+            document.getElementById('modal-bg').style.display = 'none';
+        };
+        document.getElementById('buscar-ean').onclick = buscarProduto;
+        document.getElementById('ean-modal-input').addEventListener('keydown', function(e){
+            if(e.key === 'Enter') buscarProduto();
+        });
+
+        function buscarProduto() {
+            const ean = document.getElementById('ean-modal-input').value.trim();
+            if (!ean) {
+                resultado.style.display = 'block';
+                resultado.innerHTML = "<span style='color:#ffb347'>Digite um EAN válido.</span>";
+                return;
+            }
+            resultado.style.display = 'block';
+            resultado.innerHTML = "<span style='color:#b3ff57'>Buscando...</span>";
+            fetch('https://world.openfoodfacts.org/api/v0/product/' + ean + '.json')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 1) {
+                        resultado.innerHTML = "<span style='color:#ffb347'>Produto não encontrado.</span>";
+                        return;
+                    }
+                    const produto = data.product;
+                    const imagem = produto.image_url || '';
+                    const nome = produto.product_name_pt || produto.product_name || 'Nome não informado';
+                    const embalagem = produto.packaging_pt || produto.packaging || 'Embalagem não informada';
+                    const quantidade = produto.quantity || 'Quantidade não informada';
+                    resultado.innerHTML = 
+                        (imagem ? "<img src='" + imagem + "' alt='Imagem do produto'><br>" : '') +
+                        "<strong>Nome:</strong> " + nome + "<br>" +
+                        "<strong>EAN:</strong> " + ean + "<br>" +
+                        "<strong>Embalagem:</strong> " + embalagem + "<br>" +
+                        "<strong>Quantidade:</strong> " + quantidade;
+                })
+                .catch(() => {
+                    resultado.innerHTML = "<span style='color:#ffb347'>Erro ao buscar produto.</span>";
+                });
+            document.getElementById('modal-bg').style.display = 'none';
+            setTimeout(() => {
+                resultado.scrollIntoView({behavior: "smooth"});
+            }, 200);
+        }
+        // Não há botão de voltar nesta tela!
+    `;
+    mainBg.appendChild(script);
+
+    // Carrega jsQR se não estiver carregado
+    if (!window.jsQR) {
+        const jsqrScript = document.createElement('script');
+        jsqrScript.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
+        document.body.appendChild(jsqrScript);
+    }
+}
+
+        // Altere a função telaDetalheEmpresa para chamar telaCheckinEmpresa ao clicar no botão de check-in:
+        function telaDetalheEmpresa(empresa) {
+            const mainBg = document.getElementById('main-bg');
+            mainBg.className = "container";
+            mainBg.innerHTML = `
+        <div style="margin:18px 0 0 0;">
+            <button class="voltar" id="voltar-detalhe" style="display:block;margin-bottom:18px;color:#8dc63f;font-weight:bold;font-size:1em;background:none;border:none;">&lt; VOLTAR</button>
+        </div>
+        <div style="background:#fff;border-radius:14px;box-shadow:0 2px 8px #b3c43e22;padding:18px 12px 24px 12px;max-width:320px;width:100%;margin-bottom:24px;">
+            <div style="font-family:'Inter', Arial, sans-serif;">
+                <div style="font-weight:bold;color:#888;font-size:1.13em;">${empresa.nome}</div>
+                <div style="color:#888;font-size:0.97em;margin-bottom:8px;">${empresa.segmento}</div>
+            </div>
+            <img src="${empresa.logo}" alt="Logo ${empresa.nome}" style="width:100%;max-width:220px;height:110px;object-fit:contain;border-radius:14px;background:#fff;display:block;margin:0 auto 12px auto;">
+            <div style="color:#666;font-size:0.98em;margin-bottom:6px;">
+                R. Fictícia, 123 – Centro, Cidade Exemplo – UF, 12345-000
+            </div>
+            <div style="margin-bottom:14px;">
+                <a href="https://maps.google.com" target="_blank" style="color:#8dc63f;text-decoration:none;font-size:0.97em;font-weight:bold;">
+                    <i class="fa-solid fa-location-dot"></i> VER TRAJETO NO MAPA
+                </a>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:18px;">
+                <div style="flex:1;background:#b3c43e;border-radius:12px;padding:14px 0;text-align:center;color:#222;">
+                    <div style="font-size:1.05em;font-weight:bold;margin-bottom:2px;">
+                        <i class="fa-solid fa-recycle"></i> TOTAL DE RECICLADOS
+                    </div>
+                    <div style="font-size:1.5em;font-weight:bold;">${Math.floor(Math.random()*200+50)}</div>
+                    <div style="font-size:0.95em;">(KG)</div>
+                </div>
+                <div style="flex:1;background:#b3c43e;border-radius:12px;padding:14px 0;text-align:center;color:#222;">
+                    <div style="font-size:1.05em;font-weight:bold;margin-bottom:2px;">
+                        <i class="fa-solid fa-cloud"></i> CO² RECUPERADO
+                    </div>
+                    <div style="font-size:1.5em;font-weight:bold;">${(Math.random()*2000+500).toFixed(0).replace('.',',')}</div>
+                </div>
+            </div>
+            <div style="text-align:center;color:#222;font-size:1.03em;margin:18px 0 12px 0;">
+                Se você consumir nesta empresa, solicite a Nota Fiscal, clique no botão de check-in e escaneie o QR Code, para concorrer a pontos extras em seu cartão Ciclik+
+            </div>
+            <button id="btn-checkin" style="display:block;width:100%;background:#f7b942;color:#222;font-size:1.18em;font-family:'Inter',Arial,sans-serif;border:none;border-radius:16px;padding:18px 0;font-weight:bold;letter-spacing:1px;cursor:pointer;margin:0 auto 0 auto;">
+                FAZER CHECK-IN
+            </button>
+        </div>
+    `;
+            document.getElementById('voltar-detalhe').onclick = () => telaConsumoSustentavel();
+            document.getElementById('btn-checkin').onclick = () => telaCheckinEmpresa(empresa);
         }
 
         // Voltar navegação
