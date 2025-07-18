@@ -10,10 +10,21 @@
         body {
             margin: 0;
             font-family: 'Orbitron', Arial, sans-serif;
-            background: linear-gradient(135deg, #eafbe7 0%, #b3c43e 100%);
+            background: #fff;
             color: #222;
             min-height: 100vh;
             min-width: 100vw;
+            box-sizing: border-box;
+        }
+        .login-bg, .cadastro-bg {
+            background: linear-gradient(135deg, #b3c43e 0%, #8dc63f 100%);
+            min-height: calc(100vh - 120px);
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-bottom: 80px;
             box-sizing: border-box;
         }
         .header {
@@ -84,12 +95,13 @@
             min-height: calc(100vh - 120px);
             width: 100vw;
             box-sizing: border-box;
-            padding-bottom: 90px;
+            padding-bottom: 80px;
+            background: none;
         }
         .painel-btn {
             width: 100%;
             max-width: 320px;
-            background: #b3c43e;
+            background: #8dc63f; /* Verde mais vivo */
             color: #fff;
             font-size: 1.1em;
             border: none;
@@ -99,7 +111,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px #b3c43e22;
+            box-shadow: 0 2px 8px #8dc63f22;
             font-family: 'Orbitron', Arial, sans-serif;
             font-weight: bold;
             letter-spacing: 1px;
@@ -163,11 +175,11 @@
             bottom: 0;
             left: 0;
             width: 100vw;
-            background: #f5f5f5;
-            padding: 12px 0;
+            background: #fff;
+            padding: 12px 0 8px 0;
             display: flex;
             justify-content: space-around;
-            z-index: 10;
+            z-index: 100;
             box-shadow: 0 -2px 8px #0001;
         }
         .bottom-bar i {
@@ -254,9 +266,9 @@
         }
         @media (max-width: 600px) {
             .container {
-                padding: 0 2vw 90px 2vw;
+                padding: 0 2vw 80px 2vw;
             }
-            .login-card, .cadastro-card, .painel-btn, .painel-card, .painel-link {
+            .painel-btn, .painel-card, .painel-link {
                 max-width: 98vw;
             }
             .header {
@@ -290,7 +302,7 @@
         </div>
         <button class="voltar" id="voltar" style="display:none">&lt; VOLTAR</button>
     </div>
-    <div class="container" id="main-container">
+    <div id="main-bg" class="container">
         <!-- Conteúdo dinâmico aqui -->
     </div>
 
@@ -337,7 +349,9 @@
 
         function telaLogin() {
             voltar.style.display = "none";
-            main.innerHTML = `
+            const mainBg = document.getElementById('main-bg');
+            mainBg.className = "login-bg";
+            mainBg.innerHTML = `
                 <div class="login-card">
                     <div class="login-title">ENTRAR</div>
                     <label class="login-label" for="login">Login</label>
@@ -419,7 +433,9 @@
 
         function telaPainelAnalista() {
             voltar.style.display = "block";
-            main.innerHTML = `
+            const mainBg = document.getElementById('main-bg');
+            mainBg.className = "container";
+            mainBg.innerHTML = `
                 <div style="width:100%;">
                     <button class="painel-btn"><span>Consumo sustentável</span><i class="fa-solid fa-leaf"></i></button>
                     <button class="painel-btn"><span>Agendamento de Coletas</span><i class="fa-regular fa-calendar-days"></i></button>
@@ -451,7 +467,9 @@
 
         function telaCadastro() {
             voltar.style.display = "block";
-            main.innerHTML = `
+            const mainBg = document.getElementById('main-bg');
+            mainBg.className = "cadastro-bg";
+            mainBg.innerHTML = `
                 <form class="cadastro-form" autocomplete="off">
                     <div style="font-weight:bold;margin-bottom:18px;">Selecione sua categoria:</div>
                     <div class="cadastro-tipo">
