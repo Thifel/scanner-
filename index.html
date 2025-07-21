@@ -199,7 +199,7 @@
         .login-card, .cadastro-card {
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 2px 16px #3f6a1a1a;
+            box-shadow: 0 2px 16px #3f6a1a;
             padding: 32px 18px 24px 18px;
             max-width: 350px;
             width: 100%;
@@ -232,6 +232,9 @@
             font-family: 'Orbitron', Arial, sans-serif;
             background: #f8f8f8;
         }
+        #senha.login-input {
+    margin-bottom: 0;
+}
         .login-link {
             color: #8dc63f;
             font-size: 0.95em;
@@ -379,21 +382,21 @@
             const mainBg = document.getElementById('main-bg');
             mainBg.className = "login-bg";
             mainBg.innerHTML = `
-                <div class="login-card">
-                    <div class="login-title">ENTRAR</div>
-                    <label class="login-label" for="login">Login</label>
-                    <input type="text" class="login-input" id="login" placeholder="Digite o seu login" autocomplete="username">
-                    <label class="login-label" for="senha">Senha</label>
-                    <input type="password" class="login-input" id="senha" placeholder="Digite a sua senha" autocomplete="current-password">
-                    <a href="#" class="login-link" id="esqueceu">Esqueceu sua senha?</a>
-                    <button class="login-btn" id="btn-entrar">Entrar</button>
-                </div>
-                <div class="cadastro-card">
-                    <div class="cadastro-title">Ainda não tem uma conta?</div>
-                    <div style="margin-bottom:12px;">Então cadastre-se agora</div>
-                    <button class="cadastro-btn" id="btn-cadastrar">Cadastrar</button>
-                </div>
-            `;
+        <div class="login-card">
+            <div class="login-title">ENTRAR</div>
+            <label class="login-label" for="login">Login</label>
+            <input type="text" class="login-input" id="login" placeholder="Digite o seu login" autocomplete="off">
+            <label class="login-label" for="senha">Senha</label>
+            <input type="password" class="login-input" id="senha" placeholder="Digite a sua senha" autocomplete="new-password">
+            <a href="#" class="login-link" id="esqueceu">Esqueceu sua senha?</a>
+            <button class="login-btn" id="btn-entrar">Entrar</button>
+        </div>
+        <div class="cadastro-card">
+            <div class="cadastro-title">Ainda não tem uma conta?</div>
+            <div style="margin-bottom:12px;">Então cadastre-se agora</div>
+            <button class="cadastro-btn" id="btn-cadastrar">Cadastrar</button>
+        </div>
+    `;
             document.getElementById('btn-entrar').onclick = () => {
                 const login = document.getElementById('login').value.trim();
                 const senha = document.getElementById('senha').value.trim();
@@ -414,6 +417,19 @@
             document.getElementById('esqueceu').onclick = (e) => {
                 e.preventDefault();
                 alert("Recuperação de senha: funcionalidade não implementada.");
+            };
+            document.getElementById('toggle-senha').onclick = function() {
+                const senhaInput = document.getElementById('senha');
+                const icone = document.getElementById('icone-olho');
+                if (senhaInput.type === "password") {
+                    senhaInput.type = "text";
+                    icone.classList.remove("fa-eye");
+                    icone.classList.add("fa-eye-slash");
+                } else {
+                    senhaInput.type = "password";
+                    icone.classList.remove("fa-eye-slash");
+                    icone.classList.add("fa-eye");
+                }
             };
         }
 
@@ -922,34 +938,41 @@
     border-collapse:separate;
     border-spacing:0;
     margin:0 auto 0 auto;
-    background:#162b1b;
-    border-radius:16px;
-    box-shadow:0 2px 16px #3f6a1a22;
+    background:rgba(22,43,27,0.98);
+    border-radius:18px;
+    box-shadow:0 4px 24px #8dc63f55;
     overflow:hidden;
     font-family:'Inter', Arial, sans-serif;
+    color:#eaffea;
+    table-layout:fixed;
+    font-size:0.83em;
 ">
     <thead>
-        <tr style="background:#f7b942;color:#222;font-size:0.97em;">
-            <th style="padding:8px 4px;text-align:left;border-radius:12px 0 0 0;">Nome</th>
-            <th style="padding:8px 4px;text-align:left;">EAN</th>
-            <th style="padding:8px 4px;text-align:left;">Embalagem</th>
-            <th style="padding:8px 4px;text-align:left;">Tamanho</th>
-            <th style="padding:8px 4px;text-align:center;border-radius:0 12px 0 0;">Reciclável</th>
+        <tr style="background:linear-gradient(90deg,#f7b942 0%,#8dc63f 100%);color:#222;font-size:0.92em;">
+            <th style="padding:6px 2px;text-align:left;border-radius:14px 0 0 0;width:28%;font-weight:700;white-space:nowrap;">Nome</th>
+            <th style="padding:6px 2px;text-align:left;width:20%;font-weight:700;white-space:nowrap;">Embalagem</th>
+            <th style="padding:6px 2px;text-align:left;width:18%;font-weight:700;white-space:nowrap;">Tamanho</th>
+            <th style="padding:6px 2px;text-align:center;width:16%;font-weight:700;white-space:nowrap;">Reciclável</th>
+            <th style="padding:6px 2px;text-align:center;border-radius:0 14px 0 0;width:18%;font-weight:700;white-space:nowrap;">Foto</th>
         </tr>
     </thead>
     <tbody>
 `;
-            detalhes.forEach(prod => {
+            detalhes.forEach((prod, idx) => {
                 html += `
-    <tr style="background:#162b1b;color:#eaffea;font-size:0.97em;">
-        <td style="padding:6px 4px;word-break:break-word;">${prod.nome}</td>
-        <td style="padding:6px 4px;">${prod.ean}</td>
-        <td style="padding:6px 4px;">${prod.embalagem}</td>
-        <td style="padding:6px 4px;">${prod.tamanho}</td>
-        <td style="padding:6px 4px;text-align:center;">
+    <tr style="background:rgba(22,43,27,0.95);color:#eaffea;font-size:0.93em;">
+        <td style="padding:6px 2px;word-break:break-word;">${prod.nome}</td>
+        <td style="padding:6px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${prod.embalagem}</td>
+        <td style="padding:6px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${prod.tamanho}</td>
+        <td style="padding:6px 2px;text-align:center;">
             ${prod.reciclavel 
-                ? '<span style="color:#27ae60;font-size:1.3em;">&#x2714;</span>' 
-                : '<span style="color:#e74c3c;font-size:1.3em;">&#x2718;</span>'}
+                ? '<span style="color:#27ae60;font-size:1.1em;">&#x2714;</span>' 
+                : '<span style="color:#e74c3c;font-size:1.1em;">&#x2718;</span>'}
+        </td>
+        <td style="padding:6px 2px;text-align:center;">
+            <span class="foto-icone" data-idx="${idx}" style="cursor:pointer;">
+                <i class="fa-regular fa-image" style="color:#ffd050;font-size:1.1em;"></i>
+            </span>
         </td>
     </tr>
     `;
@@ -958,14 +981,72 @@
     </tbody>
 </table>
 </div>
+<!-- Modal de foto do produto -->
+<div id="modal-foto-produto" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+    <div id="modal-foto-content" style="background:#fff;border-radius:18px;max-width:340px;width:90vw;padding:24px 18px;box-shadow:0 4px 32px #3f6a;display:flex;flex-direction:column;align-items:center;position:relative;">
+        <button id="fechar-modal-foto" style="position:absolute;top:10px;right:16px;background:none;border:none;font-size:1.5em;color:#8dc63f;cursor:pointer;">&times;</button>
+        <div id="modal-foto-img"></div>
+        <div id="modal-foto-info" style="margin-top:14px;text-align:left;width:100%;color:#222;font-size:1em;"></div>
+    </div>
+</div>
 `;
-            // Exibe o resultado no topo do container
+            // Exibe a tabela de produtos encontrados
             resultado.style.display = 'block';
             resultado.style.margin = "0 auto 24px auto";
             resultado.innerHTML = html;
+
+            // Listener para abrir imagem em modal
+            document.querySelectorAll('.foto-icone').forEach(icone => {
+                icone.onclick = function() {
+                    const idx = parseInt(this.getAttribute('data-idx'));
+                    abrirModalFoto(produtos[idx]);
+                };
+            });
         } catch (e) {
             resultado.innerHTML = "<span style='color:#ffb347'>Erro ao buscar cupom.</span>";
         }
+    }
+
+    function abrirModalFoto(produto) {
+        const modal = document.getElementById('modal-foto-produto');
+        const imgContainer = document.getElementById('modal-foto-img');
+        const infoContainer = document.getElementById('modal-foto-info');
+        imgContainer.innerHTML = ''; // Limpa conteúdo anterior
+
+        if (produto.imagem) {
+            // Se já tiver a imagem no objeto produto, usa ela
+            imgContainer.innerHTML = `<img src="${produto.imagem}" alt="Imagem do produto" style="width:100%;border-radius:12px;">`;
+        } else {
+            // Caso contrário, busca a imagem pela API do Open Food Facts
+            fetch(`https://world.openfoodfacts.org/api/v0/product/${produto.ean}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 1 && data.product.image_url) {
+                        const imgUrl = data.product.image_url;
+                        imgContainer.innerHTML = `<img src="${imgUrl}" alt="Imagem do produto" style="width:100%;border-radius:12px;">`;
+                        // Atualiza o objeto produto com a nova informação da imagem
+                        produto.imagem = imgUrl;
+                    } else {
+                        imgContainer.innerHTML = `<div style="color:#ffb347;">Imagem não disponível</div>`;
+                    }
+                })
+                .catch(() => {
+                    imgContainer.innerHTML = `<div style="color:#ffb347;">Erro ao carregar imagem</div>`;
+                });
+        }
+
+        infoContainer.innerHTML = `
+            <strong>${produto.nome}</strong><br>
+            EAN: ${produto.ean}<br>
+            Embalagem: ${produto.embalagem || 'N/A'}<br>
+            Tamanho: ${produto.tamanho || 'N/A'}<br>
+            Reciclável: ${produto.reciclavel ? 'Sim' : 'Não'}
+        `;
+
+        modal.style.display = 'flex';
+        document.getElementById('fechar-modal-foto').onclick = () => {
+            modal.style.display = 'none';
+        };
     }
 
     // Modal EAN
