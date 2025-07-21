@@ -296,6 +296,19 @@
             border-radius: 12px;
             background: #222;
         }
+        .loader {
+  border: 6px solid #e0e0e0;
+  border-top: 6px solid #8dc63f;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  animation: spin 1s linear infinite;
+  margin: 18px auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
     </style>
 </head>
 <body>
@@ -487,32 +500,45 @@
         function telaCupons() {
             const mainBg = document.getElementById('main-bg');
             mainBg.className = "container";
-            // Nomes fictícios de empresas
-            const empresas = [
-                "Eco Recicla",
-                "Verde Limpo",
-                "Planeta Sustentável",
-                "Recicla Pará",
-                "Ciclo Verde"
-            ];
             mainBg.innerHTML = `
-                <div style="margin:18px 0 0 0;">
-                    <button class="voltar" id="voltar-cupom" style="display:block;margin-bottom:18px;">&lt; VOLTAR</button>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:18px;">
-                    ${[1,2,3,4,5].map(i => `
-                        <div style="background:#fff;border-radius:14px;box-shadow:0 2px 8px #b3c43e22;padding:24px 18px;display:flex;align-items:center;gap:18px;border:1px solid #ccc;">
-                            <i class="fa-solid fa-ticket" style="color:#8dc63f;font-size:2.2em;"></i>
-                            <div style="font-family:'Inter', Arial, sans-serif;">
-                                <div style="font-weight:bold;color:#888;">nº CUPOM <span style="font-family:'Inter',Arial,sans-serif;">${String(i).padStart(4,'0')}</span></div>
-                                <div style="color:#888;">${empresas[i-1]}</div>
-                                <div style="color:#888;">${String(10+i).padStart(2,'0')}/07/2025</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+        <div style="margin:18px 0 0 0;">
+            <button class="voltar" id="voltar-cupom" style="display:block;margin-bottom:18px;">&lt; VOLTAR</button>
+        </div>
+        <div style="background:#fff;border-radius:14px;box-shadow:0 2px 8px #b3c43e22;padding:24px 18px;max-width:400px;margin:0 auto 24px auto;">
+            <div style="font-weight:bold;margin-bottom:12px;">Cole a URL do cupom eletrônico:</div>
+            <input id="cupom-url" type="text" placeholder="https://..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #b3c43e;margin-bottom:12px;">
+            <button id="buscar-itens" style="width:100%;padding:12px 0;background:#8dc63f;color:#fff;font-size:1em;border:none;border-radius:10px;font-weight:bold;cursor:pointer;">Buscar Itens</button>
+            <div id="itens-cupom" style="margin-top:18px;"></div>
+        </div>
+    `;
             document.getElementById('voltar-cupom').onclick = () => telaPainelAnalista();
+
+            document.getElementById('buscar-itens').onclick = async function() {
+                const url = document.getElementById('cupom-url').value.trim();
+                const itensDiv = document.getElementById('itens-cupom');
+                if (!url) {
+                    itensDiv.innerHTML = "<span style='color:#ffb347'>Cole a URL do cupom.</span>";
+                    return;
+                }
+                itensDiv.innerHTML = "<span style='color:#b3ff57'>Buscando itens...</span>";
+                try {
+                    // Agora chama o backend Flask!
+                    const res = await fetch('https://ciclik-backend.onrender.com/produtos', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({qr_url: url})
+                    });
+                    const data = await res.json();
+                    if (data.length > 0) {
+                        itensDiv.innerHTML = "<b>Itens encontrados:</b><br><ul style='text-align:left;'>" +
+                            data.map(prod => `<li>${prod.nome} | EAN: ${prod.ean}</li>`).join('') + "</ul>";
+                    } else {
+                        itensDiv.innerHTML = "<span style='color:#ffb347'>Nenhum item encontrado. Verifique o cupom.</span>";
+                    }
+                } catch (e) {
+                    itensDiv.innerHTML = "<span style='color:#ffb347'>Erro ao buscar cupom.</span>";
+                }
+            };
         }
 
         function telaCadastro() {
@@ -776,126 +802,222 @@
         </div>
     `;
 
-    // Função para ativar a câmera e scanner
-    const script = document.createElement('script');
-    script.innerHTML = `
-        let scanning = true;
-        let lastQR = "";
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const resultado = document.getElementById('resultado');
-        const qrResult = document.getElementById('qr-result');
-        const qrText = document.getElementById('qr-text');
-        const abrirLinkBtn = document.getElementById('abrir-link-qr');
-        qrResult.style.display = 'none';
+    // --- JS para scanner e busca de itens ---
+    let scanning = true;
+    let lastQR = "";
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const resultado = document.getElementById('resultado');
+    const qrResult = document.getElementById('qr-result');
+    const qrText = document.getElementById('qr-text');
+    const abrirLinkBtn = document.getElementById('abrir-link-qr');
+    qrResult.style.display = 'none';
 
-        function startCamera() {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
-                    .then(function(stream) {
-                        video.srcObject = stream;
-                        video.setAttribute("playsinline", true);
-                        video.play();
+    function startCamera() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.setAttribute("playsinline", true);
+                    video.play();
+                    scanning = true;
+                    requestAnimationFrame(tick);
+                })
+                .catch(function(err) {
+                    resultado.style.display = 'block';
+                    resultado.innerHTML = "<span style='color:#ffb347'>Não foi possível acessar a câmera.</span>";
+                });
+        } else {
+            resultado.style.display = 'block';
+            resultado.innerHTML = "<span style='color:#ffb347'>Seu dispositivo não suporta acesso à câmera.</span>";
+        }
+    }
+    function tick() {
+        if (!scanning) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            if(window.jsQR){
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                if (code && code.data !== lastQR) {
+                    scanning = false;
+                    lastQR = code.data;
+                    qrResult.style.display = 'block';
+                    qrText.textContent = code.data;
+                    abrirLinkBtn.onclick = function() {
+                        let url = code.data;
+                        if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+                        window.open(url, "_blank");
+                    };
+                    buscarItensCupom(code.data);
+                    setTimeout(() => {
+                        qrResult.style.display = 'none';
+                        lastQR = "";
                         scanning = true;
                         requestAnimationFrame(tick);
-                    })
-                    .catch(function(err) {
-                        resultado.style.display = 'block';
-                        resultado.innerHTML = "<span style='color:#ffb347'>Não foi possível acessar a câmera.</span>";
-                    });
-            } else {
-                resultado.style.display = 'block';
-                resultado.innerHTML = "<span style='color:#ffb347'>Seu dispositivo não suporta acesso à câmera.</span>";
-            }
-        }
-        function tick() {
-            if (!scanning) return;
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                if(window.jsQR){
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-                    if (code && code.data !== lastQR) {
-                        scanning = false;
-                        lastQR = code.data;
-                        qrResult.style.display = 'block';
-                        qrText.textContent = code.data;
-                        abrirLinkBtn.onclick = function() {
-                            let url = code.data;
-                            if (!/^https?:\\/\\//i.test(url)) url = "https://" + url;
-                            window.open(url, "_blank");
-                        };
-                        // Reinicia o scanner após 10s
-                        setTimeout(() => {
-                            qrResult.style.display = 'none';
-                            lastQR = "";
-                            scanning = true;
-                            requestAnimationFrame(tick);
-                        }, 10000);
-                        return;
-                    }
+                    }, 10000);
+                    return;
                 }
             }
-            requestAnimationFrame(tick);
         }
-        startCamera();
+        requestAnimationFrame(tick);
+    }
+    startCamera();
 
-        // Modal EAN
-        document.getElementById('abrir-ean').onclick = function() {
-            document.getElementById('modal-bg').style.display = 'flex';
-            document.getElementById('ean-modal-input').value = '';
-            document.getElementById('ean-modal-input').focus();
-        };
-        document.getElementById('fechar-modal').onclick = function() {
-            document.getElementById('modal-bg').style.display = 'none';
-        };
-        document.getElementById('buscar-ean').onclick = buscarProduto;
-        document.getElementById('ean-modal-input').addEventListener('keydown', function(e){
-            if(e.key === 'Enter') buscarProduto();
-        });
-
-        function buscarProduto() {
-            const ean = document.getElementById('ean-modal-input').value.trim();
-            if (!ean) {
-                resultado.style.display = 'block';
-                resultado.innerHTML = "<span style='color:#ffb347'>Digite um EAN válido.</span>";
+    async function buscarItensCupom(url) {
+        resultado.style.display = 'block';
+        resultado.innerHTML = `
+            <div style="font-size:1.1em;color:#8dc63f;">Lendo cupom...</div>
+            <div class="loader"></div>
+        `;
+        if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+        try {
+            const res = await fetch('https://ciclik-backend.onrender.com/produtos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({qr_url: url})
+            });
+            const produtos = await res.json();
+            if (!produtos.length) {
+                resultado.innerHTML = "<span style='color:#ffb347'>Nenhum item encontrado. Verifique o cupom.</span>";
                 return;
             }
-            resultado.style.display = 'block';
-            resultado.innerHTML = "<span style='color:#b3ff57'>Buscando...</span>";
-            fetch('https://world.openfoodfacts.org/api/v0/product/' + ean + '.json')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status !== 1) {
-                        resultado.innerHTML = "<span style='color:#ffb347'>Produto não encontrado.</span>";
-                        return;
+            resultado.innerHTML = `
+                <div style="font-size:1.1em;color:#8dc63f;">Buscando detalhes dos produtos...</div>
+                <div class="loader"></div>
+            `;
+            // Busca detalhes na Open Food Facts para cada produto
+            const detalhes = await Promise.all(produtos.map(async prod => {
+                let embalagem = "N/A";
+                let tamanho = "N/A";
+                let reciclavel = false;
+                try {
+                    const resp = await fetch(`https://world.openfoodfacts.org/api/v0/product/${prod.ean}.json`);
+                    const data = await resp.json();
+                    if (data.status === 1) {
+                        embalagem = data.product.packaging_pt || data.product.packaging || "N/A";
+                        tamanho = data.product.quantity || "N/A";
+                        // Heurística simples para reciclável
+                        const emb = (embalagem || "").toLowerCase();
+                        reciclavel = /papel|vidro|alum[ií]nio|pet|plástico|plastico|metal|cartão|cartao|tetra/.test(emb);
                     }
-                    const produto = data.product;
-                    const imagem = produto.image_url || '';
-                    const nome = produto.product_name_pt || produto.product_name || 'Nome não informado';
-                    const embalagem = produto.packaging_pt || produto.packaging || 'Embalagem não informada';
-                    const quantidade = produto.quantity || 'Quantidade não informada';
-                    resultado.innerHTML = 
-                        (imagem ? "<img src='" + imagem + "' alt='Imagem do produto'><br>" : '') +
-                        "<strong>Nome:</strong> " + nome + "<br>" +
-                        "<strong>EAN:</strong> " + ean + "<br>" +
-                        "<strong>Embalagem:</strong> " + embalagem + "<br>" +
-                        "<strong>Quantidade:</strong> " + quantidade;
-                })
-                .catch(() => {
-                    resultado.innerHTML = "<span style='color:#ffb347'>Erro ao buscar produto.</span>";
-                });
-            document.getElementById('modal-bg').style.display = 'none';
-            setTimeout(() => {
-                resultado.scrollIntoView({behavior: "smooth"});
-            }, 200);
-        }
-        // Não há botão de voltar nesta tela!
+                } catch {}
+                return {
+                    nome: prod.nome,
+                    ean: prod.ean,
+                    embalagem,
+                    tamanho,
+                    reciclavel
+                };
+            }));
+
+            // Monta a tabela
+            let html = `
+<div style="display:flex;justify-content:center;">
+<table style="
+    width:100%;max-width:340px;
+    border-collapse:separate;
+    border-spacing:0;
+    margin:0 auto 0 auto;
+    background:#162b1b;
+    border-radius:16px;
+    box-shadow:0 2px 16px #3f6a1a22;
+    overflow:hidden;
+    font-family:'Inter', Arial, sans-serif;
+">
+    <thead>
+        <tr style="background:#f7b942;color:#222;font-size:0.97em;">
+            <th style="padding:8px 4px;text-align:left;border-radius:12px 0 0 0;">Nome</th>
+            <th style="padding:8px 4px;text-align:left;">EAN</th>
+            <th style="padding:8px 4px;text-align:left;">Embalagem</th>
+            <th style="padding:8px 4px;text-align:left;">Tamanho</th>
+            <th style="padding:8px 4px;text-align:center;border-radius:0 12px 0 0;">Reciclável</th>
+        </tr>
+    </thead>
+    <tbody>
+`;
+            detalhes.forEach(prod => {
+                html += `
+    <tr style="background:#162b1b;color:#eaffea;font-size:0.97em;">
+        <td style="padding:6px 4px;word-break:break-word;">${prod.nome}</td>
+        <td style="padding:6px 4px;">${prod.ean}</td>
+        <td style="padding:6px 4px;">${prod.embalagem}</td>
+        <td style="padding:6px 4px;">${prod.tamanho}</td>
+        <td style="padding:6px 4px;text-align:center;">
+            ${prod.reciclavel 
+                ? '<span style="color:#27ae60;font-size:1.3em;">&#x2714;</span>' 
+                : '<span style="color:#e74c3c;font-size:1.3em;">&#x2718;</span>'}
+        </td>
+    </tr>
     `;
-    mainBg.appendChild(script);
+            });
+            html += `
+    </tbody>
+</table>
+</div>
+`;
+            // Exibe o resultado no topo do container
+            resultado.style.display = 'block';
+            resultado.style.margin = "0 auto 24px auto";
+            resultado.innerHTML = html;
+        } catch (e) {
+            resultado.innerHTML = "<span style='color:#ffb347'>Erro ao buscar cupom.</span>";
+        }
+    }
+
+    // Modal EAN
+    document.getElementById('abrir-ean').onclick = function() {
+        document.getElementById('modal-bg').style.display = 'flex';
+        document.getElementById('ean-modal-input').value = '';
+        document.getElementById('ean-modal-input').focus();
+    };
+    document.getElementById('fechar-modal').onclick = function() {
+        document.getElementById('modal-bg').style.display = 'none';
+    };
+    document.getElementById('buscar-ean').onclick = buscarProduto;
+    document.getElementById('ean-modal-input').addEventListener('keydown', function(e){
+        if(e.key === 'Enter') buscarProduto();
+    });
+
+    function buscarProduto() {
+        const ean = document.getElementById('ean-modal-input').value.trim();
+        if (!ean) {
+            resultado.style.display = 'block';
+            resultado.innerHTML = "<span style='color:#ffb347'>Digite um EAN válido.</span>";
+            return;
+        }
+        resultado.style.display = 'block';
+        resultado.innerHTML = "<span style='color:#b3ff57'>Buscando...</span>";
+        fetch('https://world.openfoodfacts.org/api/v0/product/' + ean + '.json')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 1) {
+                    resultado.innerHTML = "<span style='color:#ffb347'>Produto não encontrado.</span>";
+                    return;
+                }
+                const produto = data.product;
+                const imagem = produto.image_url || '';
+                const nome = produto.product_name_pt || produto.product_name || 'Nome não informado';
+                const embalagem = produto.packaging_pt || produto.packaging || 'Embalagem não informada';
+                const quantidade = produto.quantity || 'Quantidade não informada';
+                resultado.innerHTML = 
+                    (imagem ? "<img src='" + imagem + "' alt='Imagem do produto'><br>" : '') +
+                    "<strong>Nome:</strong> " + nome + "<br>" +
+                    "<strong>EAN:</strong> " + ean + "<br>" +
+                    "<strong>Embalagem:</strong> " + embalagem + "<br>" +
+                    "<strong>Quantidade:</strong> " + quantidade;
+            })
+            .catch(() => {
+                resultado.innerHTML = "<span style='color:#ffb347'>Erro ao buscar produto.</span>";
+            });
+        document.getElementById('modal-bg').style.display = 'none';
+        setTimeout(() => {
+            resultado.scrollIntoView({behavior: "smooth"});
+        }, 200);
+    }
 
     // Carrega jsQR se não estiver carregado
     if (!window.jsQR) {
